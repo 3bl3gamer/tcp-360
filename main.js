@@ -28,11 +28,13 @@ function TCPSphere(canvas) {
 		this.yRot = e.clientY / 100
 		this._draw()
 	}.bind(this)
+	this._draw()
 
 	var img = new Image()
 	img.src = "tex.jpg"
 	img.onload = function() {
 		this._imgToTex(img)
+		this._draw()
 	}.bind(this)
 }
 
@@ -149,8 +151,8 @@ TCPSphere.prototype._initBuffers = function() {
 		vertices[o*3+2] = Math.cos(theta)
 	}
 	function tex(o, u, v) {
-		texCoords[o*2  ] = u
-		texCoords[o*2+1] = v
+		texCoords[o*2  ] = 1-u
+		texCoords[o*2+1] = 1-v
 	}
 	function tri(o, i0, i1, i2) {
 		indexes[o*3  ] = i0
@@ -203,44 +205,6 @@ TCPSphere.prototype._initBuffers = function() {
 	this.indexBuffer.numItems = indexes.length
 }
 
-TCPSphere.prototype._initBuffers2 = function() {
-	var gl = this.gl;
-	
-	this.vertexPosBuffer = gl.createBuffer();
-	gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexPosBuffer);
-	var vertices = [
-		-1.0, -1.0, -1.0,
-		 1.0, -1.0, -1.0,
-		 1.0,  1.0, -1.0,
-		-1.0,  1.0, -1.0,
-	];
-	gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
-	this.vertexPosBuffer.itemSize = 3;
-	this.vertexPosBuffer.numItems = 4;
-
-	this.texCoordBuffer = gl.createBuffer();
-	gl.bindBuffer(gl.ARRAY_BUFFER, this.texCoordBuffer);
-	var texCoords = [
-		0.0, 0.0,
-		1.0, 0.0,
-		1.0, 1.0,
-		0.0, 1.0,
-	];
-	gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(texCoords), gl.STATIC_DRAW);
-	this.texCoordBuffer.itemSize = 2;
-	this.texCoordBuffer.numItems = 4;
-
-	this.indexBuffer = gl.createBuffer();
-	gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.indexBuffer);
-	var indexes = [
-		0, 1, 2,
-		0, 2, 3,
-	];
-	gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(indexes), gl.STATIC_DRAW);
-	this.indexBuffer.itemSize = 1;
-	this.indexBuffer.numItems = 6;
-}
-
 TCPSphere.prototype._bindBuffers = function() {
 	var gl = this.gl
 	
@@ -257,7 +221,7 @@ TCPSphere.prototype._imgToTex = function(img) {
 	var gl = this.gl
 	var tex = gl.createTexture()
 	gl.bindTexture(gl.TEXTURE_2D, tex)
-	gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true)
+	//gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true)
 	gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, img) //RGBA
 	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR) //NEAREST
 	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR)
