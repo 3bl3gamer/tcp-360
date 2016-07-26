@@ -1,6 +1,4 @@
-function TCPSphere(canvas) {
-	this.canvas = canvas
-	this.gl = null
+function TCPSphere(gl) {
 	this.shaderProgram = null
 	this.vertexPosBuffer = null
 	this.texCoordBuffer = null
@@ -10,32 +8,20 @@ function TCPSphere(canvas) {
 	this.xRot = 0
 	this.yRot = 0
 
-	this.resize()
-	this._initGL()
-	this._initShaders()
-	this._initBuffers()
-	this._bindBuffers()
-
-	var gl = this.gl
-	gl.clearColor(0.3, 0.3, 0.3, 1)
-	gl.enable(gl.BLEND)
-	gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
-	gl.enable(gl.DEPTH_TEST)
-	gl.depthFunc(gl.LESS)
+	this.shaderProgram = GFX.buildShaderProgram(gl, TCPSphere.shader)
+	this._initBuffers(gl)
+	this._bindBuffers(gl)
 
 	window.onmousemove = function(e) {
 		this.xRot = e.clientX / 100
 		this.yRot = e.clientY / 100
 	}.bind(this)
-	this._draw()
 
 	var img = new Image()
 	img.src = "tex.jpg"
 	img.onload = function() {
-		this._imgToTex(img)
+		this._imgToTex(gl, img)
 	}.bind(this)
-
-	setInterval(function(){ this._draw() }.bind(this), 16)
 }
 
 TCPSphere.shader = {}
@@ -62,24 +48,26 @@ TCPSphere.shader.vs = "\
 		gl_Position = uPMatrix * uMVMatrix * vec4(mix(spherePosition, aVertexPosition, uPhase), 1.0);\
 		vTextureCoord = aTextureCoord;\
 	}"
+TCPSphere.shader.init = function(gl, prog) {
+	gl.useProgram(prog)
+	
+	prog.vertexPosAttribute = gl.getAttribLocation(prog, "aVertexPosition")
+	gl.enableVertexAttribArray(prog.vertexPosAttribute)
 
-TCPSphere.prototype.resize = function() {
-	var rect = this.canvas.getBoundingClientRect()
-	var scale = devicePixelRatio
-	this.canvas.width = rect.width * scale
-	this.canvas.height = rect.height * scale
+	prog.texCoordAttribute = gl.getAttribLocation(prog, "aTextureCoord")
+	gl.enableVertexAttribArray(prog.texCoordAttribute)
+
+	prog.pMatrixUniform = gl.getUniformLocation(prog, "uPMatrix")
+	prog.mvMatrixUniform = gl.getUniformLocation(prog, "uMVMatrix")
+	prog.samplerUniform = gl.getUniformLocation(prog, "uSampler")
+	prog.phaseUniform = gl.getUniformLocation(prog, "uPhase")
 }
 
-TCPSphere.prototype._initGL = function() {
-	this.gl = this.canvas.getContext('webgl') ||
-		this.canvas.getContext("experimental-webgl")
-}
-
-TCPSphere.prototype._draw = function() {
-	var gl = this.gl
+TCPSphere.prototype.draw = function(gfx) {
+	var gl = gfx.gl
 
 	var pMatrix = mat4.create()
-	mat4.perspective(this.fov, this.canvas.width / this.canvas.height, 0.1, 10.0, pMatrix)
+	mat4.perspective(this.fov, gfx.canvas.width / gfx.canvas.height, 0.1, 10.0, pMatrix)
 	mat4.translate(pMatrix, [0, 0, -3])
 	mat4.rotateX(pMatrix, this.yRot + Math.PI/2)
 	mat4.rotateZ(pMatrix, this.xRot)
@@ -93,56 +81,7 @@ TCPSphere.prototype._draw = function() {
 	gl.drawElements(gl.TRIANGLES, this.indexBuffer.numItems, gl.UNSIGNED_SHORT, 0)
 }
 
-TCPSphere.prototype._buildShader = function(gl, shaderText, type) {
-	var shader = gl.createShader(type) //type: gl.FRAGMENT_SHADER or gl.VERTEX_SHADER
-
-	gl.shaderSource(shader, shaderText)
-	gl.compileShader(shader)
-	
-	if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
-		throw new Error("Shader compile error:\n" + gl.getShaderInfoLog(shader))
-	}
-	return shader
-}
-
-TCPSphere.prototype._buildShaderProgram = function(gl, fsText, vsText) {
-	var fragmentShader = this._buildShader(gl, fsText, gl.FRAGMENT_SHADER)
-	var vertexShader = this._buildShader(gl, vsText, gl.VERTEX_SHADER)
-
-	var prog = gl.createProgram()
-	gl.attachShader(prog, vertexShader)
-	gl.attachShader(prog, fragmentShader)
-	gl.linkProgram(prog)
-
-	if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) {
-		var err = gl.getProgramInfoLog(prog)
-		gl.deleteProgram(prog)
-		throw new Error("Shader linking error:\n" + err)
-	}
-	return prog
-}
-
-TCPSphere.prototype._initShaders = function() {
-	var gl = this.gl
-	var prog = this._buildShaderProgram(gl, TCPSphere.shader.fs, TCPSphere.shader.vs)
-	gl.useProgram(prog)
-	
-	prog.vertexPosAttribute = gl.getAttribLocation(prog, "aVertexPosition")
-	gl.enableVertexAttribArray(prog.vertexPosAttribute)
-
-	prog.texCoordAttribute = gl.getAttribLocation(prog, "aTextureCoord")
-	gl.enableVertexAttribArray(prog.texCoordAttribute)
-
-	prog.pMatrixUniform = gl.getUniformLocation(prog, "uPMatrix")
-	prog.mvMatrixUniform = gl.getUniformLocation(prog, "uMVMatrix")
-	prog.samplerUniform = gl.getUniformLocation(prog, "uSampler")
-	prog.phaseUniform = gl.getUniformLocation(prog, "uPhase")
-
-	this.shaderProgram = prog
-}
-
-TCPSphere.prototype._initBuffers = function() {
-	var gl = this.gl
+TCPSphere.prototype._initBuffers = function(gl) {
 	var hsteps = 32, vsteps = hsteps/2
 	var vtxNumber = (hsteps+1)*(vsteps+1)
 	var indNumber = hsteps*vsteps*6
@@ -204,9 +143,7 @@ TCPSphere.prototype._initBuffers = function() {
 	this.indexBuffer.numItems = indexes.length
 }
 
-TCPSphere.prototype._bindBuffers = function() {
-	var gl = this.gl
-	
+TCPSphere.prototype._bindBuffers = function(gl) {
 	gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexPosBuffer)
 	gl.vertexAttribPointer(this.shaderProgram.vertexPosAttribute, this.vertexPosBuffer.itemSize, gl.FLOAT, false, 0, 0)
 	
@@ -216,8 +153,7 @@ TCPSphere.prototype._bindBuffers = function() {
 	gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.indexBuffer)
 }
 
-TCPSphere.prototype._imgToTex = function(img) {
-	var gl = this.gl
+TCPSphere.prototype._imgToTex = function(gl, img) {
 	var tex = gl.createTexture()
 	gl.bindTexture(gl.TEXTURE_2D, tex)
 	//gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true)
@@ -239,4 +175,8 @@ TCPSphere.prototype._imgToTex = function(img) {
 	return tex
 }
 
-new TCPSphere(canvas)
+
+var gfx = new GFX(canvas)
+var sphere = new TCPSphere(gfx.gl)
+
+setInterval(function(){ sphere.draw(gfx) }, 16)
