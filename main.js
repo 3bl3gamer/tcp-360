@@ -1,21 +1,13 @@
 function TCPSphere(gl) {
-	this.shaderProgram = null
+	this.mvMatrix = mat4.identity(mat4.create())
+
 	this.vertexPosBuffer = null
 	this.texCoordBuffer = null
 	this.indexBuffer = null
 
-	this.fov = 75
-	this.xRot = 0
-	this.yRot = 0
-
 	this.shaderProgram = GFX.buildShaderProgram(gl, TCPSphere.shader)
 	this._initBuffers(gl)
 	this._bindBuffers(gl)
-
-	window.onmousemove = function(e) {
-		this.xRot = e.clientX / 100
-		this.yRot = e.clientY / 100
-	}.bind(this)
 
 	var img = new Image()
 	img.src = "tex.jpg"
@@ -66,18 +58,10 @@ TCPSphere.shader.init = function(gl, prog) {
 TCPSphere.prototype.draw = function(gfx) {
 	var gl = gfx.gl
 
-	var pMatrix = mat4.create()
-	mat4.perspective(this.fov, gfx.canvas.width / gfx.canvas.height, 0.1, 10.0, pMatrix)
-	mat4.translate(pMatrix, [0, 0, -3])
-	mat4.rotateX(pMatrix, this.yRot + Math.PI/2)
-	mat4.rotateZ(pMatrix, this.xRot)
-	var mvMatrix = mat4.identity(mat4.create())
-
-	gl.uniformMatrix4fv(this.shaderProgram.pMatrixUniform, false, pMatrix)
-	gl.uniformMatrix4fv(this.shaderProgram.mvMatrixUniform, false, mvMatrix)
+	gl.uniformMatrix4fv(this.shaderProgram.pMatrixUniform, false, gfx.camera.pMatrix)
+	gl.uniformMatrix4fv(this.shaderProgram.mvMatrixUniform, false, this.mvMatrix)
 	gl.uniform1f(this.shaderProgram.phaseUniform, Math.sin(Date.now()/1000)/2+0.5)
 	
-	gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
 	gl.drawElements(gl.TRIANGLES, this.indexBuffer.numItems, gl.UNSIGNED_SHORT, 0)
 }
 
@@ -91,9 +75,9 @@ TCPSphere.prototype._initBuffers = function(gl) {
 	var indexes = new Uint16Array(indNumber)
 
 	function vtx(o, phi, theta) {
-		vertices[o*3  ] = phi-Math.PI//Math.cos(phi) * Math.sin(theta)
-		vertices[o*3+1] = 0//Math.sin(phi) * Math.sin(theta)
-		vertices[o*3+2] = theta-Math.PI/2//Math.cos(theta)
+		vertices[o*3  ] = phi-Math.PI
+		vertices[o*3+1] = 0
+		vertices[o*3+2] = theta-Math.PI/2
 	}
 	function tex(o, u, v) {
 		texCoords[o*2  ] = 1-u
@@ -160,7 +144,7 @@ TCPSphere.prototype._imgToTex = function(gl, img) {
 	gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, img) //RGBA
 	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR) //NEAREST
 	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR)
-	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_NEAREST);
+	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_NEAREST)
 	gl.generateMipmap(gl.TEXTURE_2D)
 	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
 	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
@@ -179,4 +163,10 @@ TCPSphere.prototype._imgToTex = function(gl, img) {
 var gfx = new GFX(canvas)
 var sphere = new TCPSphere(gfx.gl)
 
-setInterval(function(){ sphere.draw(gfx) }, 16)
+gfx.start(function(gl){
+	sphere.draw(gfx)
+})
+
+window.onmousemove = function(e) {
+	gfx.camera.setRot(e.clientX / 100, e.clientY / 100)
+}
