@@ -2,12 +2,22 @@ package nethack
 
 import (
 	"bufio"
-	"fmt"
+	//"fmt"
 	"os/exec"
 	"strings"
 )
 
-func Work() (err error) {
+type Worker struct {
+	Channel chan Packet
+}
+
+func NewWorker() (ret *Worker) {
+	ret = &Worker{}
+	ret.Channel = make(chan Packet, 10)
+	return
+}
+
+func (w *Worker) Run() {
 	cmd := exec.Command("tcpdump", "-q", "-n", "-t", "-l", "ip")
 	r, err := cmd.StdoutPipe()
 	if err != nil {
@@ -26,11 +36,12 @@ func Work() (err error) {
 			return
 		}
 		line = strings.TrimSpace(line)
-		fmt.Printf("DUMP: %s\n", line)
+		//fmt.Printf("DUMP: %s\n", line)
 
 		p, err := AnalyzeAlpha(line)
 		if err == nil {
-			fmt.Printf("AN: %v\n", p)
+			//fmt.Printf("AN: %v\n", p)
+			w.Channel <- p
 		}
 	}
 }
