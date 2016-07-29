@@ -82,8 +82,8 @@ LinesHost.prototype.draw = function(gfx) {
 	var k = Math.PI/180
 	for (var i=0; i<this.lines.length; i++) {
 		var line = this.lines[i]
-		gl.uniform2f(this.shaderProgram.rot0Uniform, line.data.start.longtitude*k, line.data.start.latitude*k)
-		gl.uniform2f(this.shaderProgram.rot1Uniform, line.data.end.longtitude*k, line.data.end.latitude*k)
+		gl.uniform2f(this.shaderProgram.rot0Uniform, line.start.longtitude*k, line.start.latitude*k)
+		gl.uniform2f(this.shaderProgram.rot1Uniform, line.end.longtitude*k, line.end.latitude*k)
 		gl.drawArrays(gl.LINE_STRIP, 0, this.vertexPosBuffer.numItems)
 	}
 
@@ -91,13 +91,15 @@ LinesHost.prototype.draw = function(gfx) {
 	gl.depthMask(true)
 }
 
-LinesHost.prototype.addLine = function(data) {
-	this.lines.push(new Line(data))
+LinesHost.prototype.addLine = function(start, end, params) {
+	this.lines.push(new Line(start, end, params))
 }
 
 
-function Line(data) {
-	this.data = data
+function Line(start, end, params) {
+	this.start = start
+	this.end = end
+	this.params = params
 	this.created_at = Date.now()
 }
 

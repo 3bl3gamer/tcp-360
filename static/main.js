@@ -7,6 +7,12 @@ gfx.start(function(gl){
 	lines.draw(gfx)
 })
 
+window.onresize = function() {
+	gfx.resize()
+}
+
+
+
 var isGrabbed=false, prevX=0, prevY=0
 function singleDown(x, y, is_switching) {
 	prevX = x
@@ -34,12 +40,36 @@ control.double({
 	stopElem: window
 })
 
-window.onresize = function() {
-	gfx.resize()
+
+
+var me = null
+var handlers = {
+	init: function(data) {
+		me = data
+	},
+	packet: function(data) {
+		lines.addLine(me, data, data)
+	}
+}
+function handleEvent(data) {
+	var handler = handlers[data.event]
+	if (!handler) throw new Error("wrong event: "+data.event)
+	handler(data)
 }
 
 
-function genRandomPacket() {
+
+// mocking
+function sendInit() {
+	handleEvent({
+		event: "init",
+		ip: "1.2.3.4",
+		latitude: 34.165768,
+		longtitude: -118.282969,
+		caption: "Newbee Street, California, US"
+	})
+}
+function sendRandomPacket() {
 	var places = {
 		"Penza": [45.00,53.20],
 		"Sydney": [151.21,-33.87],
@@ -50,23 +80,17 @@ function genRandomPacket() {
 		"Madagascar": [49.65,-15.34],
 		"Vladivostok": [131.89,43.12]
 	}
-	var p1 = Object.keys(places)[Math.random()*8|0]
-	var p2 = Object.keys(places)[Math.random()*8|0]
-	var data = {
-		start: {
-			latitude: places[p1][1],
-			longtitude: places[p1][0],
-			caption: p1
-		},
-		end: {
-			latitude: places[p2][1],
-			longtitude: places[p2][0],
-			caption: p2,
-			ip: "2.2.2.2"
-		},
-		type: ["tcp", "udp"][Math.random()*2|0],
-		size: 1+Math.random()*2048
-	}
-	lines.addLine(data)
+	var p = Object.keys(places)[Math.random()*8|0]
+	handleEvent({
+		event: "packet",
+		ip: "4.3.2.1",
+		latitude: places[p][1],
+		longtitude: places[p][0],
+		caption: p,
+		port: Math.random()*65536|0,
+		type: ["TCP", "UDP", "ICMP"][Math.random()*3|0],
+		size: Math.random()*4096|0
+	})
 }
-for (var i=10;i--;) genRandomPacket()
+sendInit()
+for (var i=10;i--;) sendRandomPacket()
