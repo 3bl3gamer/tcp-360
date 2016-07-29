@@ -28,9 +28,10 @@ LinesHost.shader.vs = "\
 		float k = aVertexPosition.x;\
 		vec3 f = vec3(sin(uRot0.x)*cos(uRot0.y), cos(uRot0.x)*cos(uRot0.y), -sin(uRot0.y));\
 		vec3 t = vec3(sin(uRot1.x)*cos(uRot1.y), cos(uRot1.x)*cos(uRot1.y), -sin(uRot1.y));\
+		float len = distance(t, f);\
+		float dis = distance(-t, f)*0.5;\
 		vec3 mid = normalize(f+t);\
-		float l = distance(t, f);\
-		gl_Position = uPMatrix * uMVMatrix * vec4(mix(f, t, cos(k*PI)*0.5+0.5) + mid*sin(k*PI)*l*0.5, 1.0);\
+		gl_Position = uPMatrix * uMVMatrix * vec4(mix(f, t, cos(k*PI)*0.5+0.5) + mid*sin(k*PI)*(1.05-dis), 1.0);\
 	}"
 LinesHost.shader.init = function(gl, prog) {
 	gl.useProgram(prog)
