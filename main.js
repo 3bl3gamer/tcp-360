@@ -57,16 +57,18 @@ TCPSphere.shader.init = function(gl, prog) {
 
 TCPSphere.prototype.draw = function(gfx) {
 	var gl = gfx.gl
+	gl.useProgram(this.shaderProgram)
+	this._bindBuffers(gfx.gl)
 
 	gl.uniformMatrix4fv(this.shaderProgram.pMatrixUniform, false, gfx.camera.pMatrix)
 	gl.uniformMatrix4fv(this.shaderProgram.mvMatrixUniform, false, this.mvMatrix)
-	gl.uniform1f(this.shaderProgram.phaseUniform, Math.sin(Date.now()/1000)/2+0.5)
+	gl.uniform1f(this.shaderProgram.phaseUniform, (Math.sin(Date.now()/1000)/2+0.5)*0)
 	
 	gl.drawElements(gl.TRIANGLES, this.indexBuffer.numItems, gl.UNSIGNED_SHORT, 0)
 }
 
 TCPSphere.prototype._initBuffers = function(gl) {
-	var hsteps = 32, vsteps = hsteps/2
+	var hsteps = 64, vsteps = hsteps/2
 	var vtxNumber = (hsteps+1)*(vsteps+1)
 	var indNumber = hsteps*vsteps*6
 
@@ -80,8 +82,8 @@ TCPSphere.prototype._initBuffers = function(gl) {
 		vertices[o*3+2] = theta-Math.PI/2
 	}
 	function tex(o, u, v) {
-		texCoords[o*2  ] = 1-u
-		texCoords[o*2+1] = 1-v
+		texCoords[o*2  ] = u
+		texCoords[o*2+1] = v
 	}
 	function tri(o, i0, i1, i2) {
 		indexes[o*3  ] = i0
@@ -162,9 +164,11 @@ TCPSphere.prototype._imgToTex = function(gl, img) {
 
 var gfx = new GFX(canvas)
 var sphere = new TCPSphere(gfx.gl)
+var lines = new LinesHost(gfx.gl)
 
 gfx.start(function(gl){
 	sphere.draw(gfx)
+	lines.draw(gfx)
 })
 
 window.onmousemove = function(e) {

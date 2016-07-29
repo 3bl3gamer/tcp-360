@@ -7,7 +7,7 @@ function GFX(canvas) {
 		this.canvas.getContext("experimental-webgl")
 
 	var gl = this.gl
-	gl.clearColor(0.3, 0.3, 0.3, 1)
+	gl.clearColor(0.1, 0.1, 0.1, 1)
 	gl.enable(gl.BLEND)
 	gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
 	gl.enable(gl.DEPTH_TEST)
@@ -66,7 +66,7 @@ GFX.buildShaderProgram = function(gl, params /*{fs, vs, init(gl,prog)}*/) {
 
 GFX.Camera = function() {
 	this.pMatrix = mat4.create()
-	this.fov = 75
+	this.fov = 50
 	this.aspectRatio = 1
 	this.xRot = 0
 	this.yRot = 0
