@@ -1,5 +1,6 @@
 function LinesHost(gl) {
 	this.mvMatrix = mat4.identity(mat4.create())
+	this.lines = []
 
 	this.vertexPosBuffer = null
 	this.shaderProgram = GFX.buildShaderProgram(gl, LinesHost.shader)
@@ -49,32 +50,6 @@ LinesHost.prototype.getPos = function(dest, phi, theta) {
 	dest[2] = Math.sin(theta)
 }
 
-LinesHost.prototype.draw = function(gfx) {
-	var gl = gfx.gl
-	gl.useProgram(this.shaderProgram)
-	this._bindBuffers(gl)
-
-	gl.lineWidth(2)
-	gl.blendFunc(gl.ONE, gl.ONE)
-	gl.depthMask(false)
-
-	gl.uniformMatrix4fv(this.shaderProgram.pMatrixUniform, false, gfx.camera.pMatrix)
-	gl.uniformMatrix4fv(this.shaderProgram.mvMatrixUniform, false, this.mvMatrix)
-
-	for (let [a,b] of [[151.21,-33.87], [-109.35,-27.12], [37.62,55.76], [-74.01,40.71], [31.21,29.99], [49.65,-15.34], [131.89,43.12]]) {
-		for (let i=0;i<1;i++){
-			var [c,d] = [45.00,53.20]
-			gl.uniform2f(this.shaderProgram.rot0Uniform, a/180*Math.PI, b/180*Math.PI+i/10)
-			gl.uniform2f(this.shaderProgram.rot1Uniform, c/180*Math.PI, d/180*Math.PI)
-			gl.drawArrays(gl.LINE_STRIP, 0, this.vertexPosBuffer.numItems)
-		}
-		//break
-	}
-
-	gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
-	gl.depthMask(true)
-}
-
 LinesHost.prototype._initBuffers = function(gl) {
 	var vertices = new Float32Array(32)
 	for (var i=0; i<vertices.length; i++) vertices[i] = i/(vertices.length-1)
@@ -90,4 +65,42 @@ LinesHost.prototype._bindBuffers = function(gl) {
 	gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexPosBuffer)
 	gl.vertexAttribPointer(this.shaderProgram.vertexPosAttribute, this.vertexPosBuffer.itemSize, gl.FLOAT, false, 0, 0)
 	//gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null)
+}
+
+LinesHost.prototype.draw = function(gfx) {
+	var gl = gfx.gl
+	gl.useProgram(this.shaderProgram)
+	this._bindBuffers(gl)
+
+	gl.lineWidth(2)
+	gl.blendFunc(gl.ONE, gl.ONE)
+	gl.depthMask(false)
+
+	gl.uniformMatrix4fv(this.shaderProgram.pMatrixUniform, false, gfx.camera.pMatrix)
+	gl.uniformMatrix4fv(this.shaderProgram.mvMatrixUniform, false, this.mvMatrix)
+
+	var k = Math.PI/180
+	for (var i=0; i<this.lines.length; i++) {
+		var line = this.lines[i]
+		gl.uniform2f(this.shaderProgram.rot0Uniform, line.data.start.longtitude*k, line.data.start.latitude*k)
+		gl.uniform2f(this.shaderProgram.rot1Uniform, line.data.end.longtitude*k, line.data.end.latitude*k)
+		gl.drawArrays(gl.LINE_STRIP, 0, this.vertexPosBuffer.numItems)
+	}
+
+	gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
+	gl.depthMask(true)
+}
+
+LinesHost.prototype.addLine = function(data) {
+	this.lines.push(new Line(data))
+}
+
+
+function Line(data) {
+	this.data = data
+	this.created_at = Date.now()
+}
+
+Line.prototype.hasExpired = function() {
+	return Date.now() - this.created_at > 3000
 }
