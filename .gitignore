@@ -1,1 +1,6 @@
+# Go
+pkg/
+bin/
+
+# Tool-specific
 *~
