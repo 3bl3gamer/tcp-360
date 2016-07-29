@@ -24,7 +24,7 @@ TCPSphere.shader.fs = "\
 	uniform sampler2D uSampler;\
 	\
 	void main(void) {\
-		float d = clamp(gl_FragCoord.z/gl_FragCoord.w-2.2, -0.1, 1.0);\
+		float d = clamp(gl_FragCoord.z/gl_FragCoord.w-4.2, -0.1, 1.0);\
 		gl_FragColor = mix(texture2D(uSampler, vec2(vTextureCoord.s, vTextureCoord.t)), vec4(1,1,1,1), d);\
 	}"
 TCPSphere.shader.vs = "\

@@ -68,7 +68,7 @@ GFX.buildShaderProgram = function(gl, params /*{fs, vs, init(gl,prog)}*/) {
 
 GFX.Camera = function() {
 	this.pMatrix = mat4.create()
-	this.fov = 50
+	this.fov = 30
 	this.aspectRatio = 1
 	this.xRot = 0
 	this.yRot = 0
@@ -76,9 +76,9 @@ GFX.Camera = function() {
 
 GFX.Camera.prototype._updateMatrix = function() {
 	mat4.perspective(this.fov, this.aspectRatio, 0.1, 10.0, this.pMatrix)
-	mat4.translate(this.pMatrix, [0, 0, -3])
+	mat4.translate(this.pMatrix, [0, 0, -5])
 	mat4.rotateX(this.pMatrix, this.yRot + Math.PI/2)
-	mat4.rotateZ(this.pMatrix, this.xRot)
+	mat4.rotateZ(this.pMatrix, -this.xRot)
 }
 
 GFX.Camera.prototype.setAspectRatio = function(aspectRatio) {
@@ -86,8 +86,8 @@ GFX.Camera.prototype.setAspectRatio = function(aspectRatio) {
 	this._updateMatrix()
 }
 
-GFX.Camera.prototype.setRot = function(dx, dy) {
-	this.xRot = dx
-	this.yRot = dy
+GFX.Camera.prototype.addRot = function(dx, dy) {
+	this.xRot += dx
+	this.yRot = Math.max(-Math.PI/2.1, Math.min(this.yRot+dy, Math.PI/2.1))
 	this._updateMatrix()
 }

@@ -7,9 +7,32 @@ gfx.start(function(gl){
 	lines.draw(gfx)
 })
 
-window.onmousemove = function(e) {
-	gfx.camera.setRot(e.clientX / 100, e.clientY / 100)
+var isGrabbed=false, prevX=0, prevY=0
+function singleDown(x, y, is_switching) {
+	prevX = x
+	prevY = y
+	isGrabbed = true
+	return true
 }
+function singleMove(x, y) {
+	if (!isGrabbed) return false
+	gfx.camera.addRot((x-prevX)/100, (y-prevY)/100)
+	prevX = x
+	prevY = y
+	return true
+}
+function singleUp(is_switching) {
+	if (!isGrabbed) return false
+	isGrabbed = false
+	return true
+}
+control.double({
+	singleDown: singleDown,
+	singleMove: singleMove,
+	singleUp: singleUp,
+	startElem: canvas,
+	stopElem: window
+})
 
 window.onresize = function() {
 	gfx.resize()
