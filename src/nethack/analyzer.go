@@ -18,9 +18,9 @@ var (
 func init() {
 	ParseError = errors.New("Unrecognized line format")
 
-	RegexpUDP = regexp.MustCompile("^IP \\d+[.]\\d+[.]\\d+[.]\\d+[.]\\d+ [>] (\\d+[.]\\d+[.]\\d+[.]\\d+)[.](\\d+): UDP, length (\\d+)$")
-	RegexpICMP = regexp.MustCompile("^IP \\d+[.]\\d+[.]\\d+[.]\\d+ [>] (\\d+[.]\\d+[.]\\d+[.]\\d+): ICMP.*, length (\\d+)$")
-	RegexpTCP = regexp.MustCompile("^IP \\d+[.]\\d+[.]\\d+[.]\\d+[.]\\d+ [>] (\\d+[.]\\d+[.]\\d+[.]\\d+)[.](\\d+): tcp (\\d+)$")
+	RegexpUDP = regexp.MustCompile(`^IP \d+[.]\d+[.]\d+[.]\d+[.]\d+ [>] (\d+[.]\d+[.]\d+[.]\d+)[.](\d+): UDP, length (\d+)$`)
+	RegexpICMP = regexp.MustCompile(`^IP \d+[.]\d+[.]\d+[.]\d+ [>] (\d+[.]\d+[.]\d+[.]\d+): ICMP.*, length (\d+)$`)
+	RegexpTCP = regexp.MustCompile(`^IP \d+[.]\d+[.]\d+[.]\d+[.]\d+ [>] (\d+[.]\d+[.]\d+[.]\d+)[.](\d+): tcp (\d+)$`)
 }
 
 // AnalyzeAlpha analyzes tcpdump output, assuming following commandline:
