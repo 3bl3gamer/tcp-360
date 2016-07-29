@@ -52,7 +52,7 @@ LinesHost.prototype.getPos = function(dest, phi, theta) {
 LinesHost.prototype.draw = function(gfx) {
 	var gl = gfx.gl
 	gl.useProgram(this.shaderProgram)
-	this._bindBuffers(gfx.gl)
+	this._bindBuffers(gl)
 
 	gl.lineWidth(2)
 	gl.blendFunc(gl.ONE, gl.ONE)

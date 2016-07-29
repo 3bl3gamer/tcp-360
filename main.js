@@ -10,3 +10,7 @@ gfx.start(function(gl){
 window.onmousemove = function(e) {
 	gfx.camera.setRot(e.clientX / 100, e.clientY / 100)
 }
+
+window.onresize = function() {
+	gfx.resize()
+}

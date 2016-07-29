@@ -20,10 +20,12 @@ TCPSphere.shader = {}
 TCPSphere.shader.fs = "\
 	precision mediump float;\
 	varying vec2 vTextureCoord;\
+	varying float depth;\
 	uniform sampler2D uSampler;\
 	\
 	void main(void) {\
-		gl_FragColor = texture2D(uSampler, vec2(vTextureCoord.s, vTextureCoord.t));\
+		float d = clamp(gl_FragCoord.z/gl_FragCoord.w-2.2, -0.1, 1.0);\
+		gl_FragColor = mix(texture2D(uSampler, vec2(vTextureCoord.s, vTextureCoord.t)), vec4(1,1,1,1), d);\
 	}"
 TCPSphere.shader.vs = "\
 	precision mediump float;\
@@ -33,12 +35,14 @@ TCPSphere.shader.vs = "\
 	uniform mat4 uPMatrix;\
 	uniform float uPhase;\
 	varying vec2 vTextureCoord;\
+	varying float depth;\
 	\
 	void main(void) {\
 		float phi = aVertexPosition.x, theta = aVertexPosition.z;\
 		vec3 spherePosition = vec3(sin(phi)*cos(theta), cos(phi)*cos(theta), sin(theta));\
 		gl_Position = uPMatrix * uMVMatrix * vec4(mix(spherePosition, aVertexPosition, uPhase), 1.0);\
 		vTextureCoord = aTextureCoord;\
+		depth = gl_Position.z;\
 	}"
 TCPSphere.shader.init = function(gl, prog) {
 	gl.useProgram(prog)
@@ -58,7 +62,7 @@ TCPSphere.shader.init = function(gl, prog) {
 TCPSphere.prototype.draw = function(gfx) {
 	var gl = gfx.gl
 	gl.useProgram(this.shaderProgram)
-	this._bindBuffers(gfx.gl)
+	this._bindBuffers(gl)
 
 	gl.uniformMatrix4fv(this.shaderProgram.pMatrixUniform, false, gfx.camera.pMatrix)
 	gl.uniformMatrix4fv(this.shaderProgram.mvMatrixUniform, false, this.mvMatrix)

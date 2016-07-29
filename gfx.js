@@ -1,10 +1,11 @@
 function GFX(canvas) {
 	this.canvas = canvas
 	this.camera = new GFX.Camera()
-	this.resize()
 
-	this.gl = this.gl = this.canvas.getContext('webgl') ||
+	this.gl = this.canvas.getContext('webgl') ||
 		this.canvas.getContext("experimental-webgl")
+
+	this.resize()
 
 	var gl = this.gl
 	gl.clearColor(0.1, 0.1, 0.1, 1)
@@ -20,6 +21,7 @@ GFX.prototype.resize = function() {
 	this.canvas.width = rect.width * scale
 	this.canvas.height = rect.height * scale
 	this.camera.setAspectRatio(this.canvas.width / this.canvas.height)
+	this.gl.viewport(0, 0, this.canvas.width, this.canvas.height)
 }
 
 GFX.prototype.start = function(frameFunc) {
