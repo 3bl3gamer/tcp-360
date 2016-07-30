@@ -8,9 +8,40 @@
 			"branch": "master"
 		},
 		{
+			"importpath": "github.com/dustin/go-broadcast",
+			"repository": "https://github.com/dustin/go-broadcast",
+			"revision": "3bdf6d4a7164a50bc19d5f230e2981d87d2584f1",
+			"branch": "master"
+		},
+		{
+			"importpath": "github.com/gin-gonic/gin",
+			"repository": "https://github.com/gin-gonic/gin",
+			"revision": "f931d1ea80ae95a6fc739213cdd9399bd2967fb6",
+			"branch": "develop"
+		},
+		{
+			"importpath": "github.com/golang/protobuf/proto",
+			"repository": "https://github.com/golang/protobuf",
+			"revision": "c3cefd437628a0b7d31b34fe44b3a7a540e98527",
+			"branch": "master",
+			"path": "/proto"
+		},
+		{
 			"importpath": "github.com/jtolds/gls",
 			"repository": "https://github.com/jtolds/gls",
 			"revision": "8ddce2a84170772b95dd5d576c48d517b22cac63",
+			"branch": "master"
+		},
+		{
+			"importpath": "github.com/manucorporat/sse",
+			"repository": "https://github.com/manucorporat/sse",
+			"revision": "ee05b128a739a0fb76c7ebd3ae4810c1de808d6d",
+			"branch": "master"
+		},
+		{
+			"importpath": "github.com/manucorporat/stats",
+			"repository": "https://github.com/manucorporat/stats",
+			"revision": "8f2d6ace262eba462e9beb552382c98be51d807b",
 			"branch": "master"
 		},
 		{
@@ -26,6 +57,40 @@
 			"branch": "master"
 		},
 		{
+			"importpath": "github.com/pquerna/ffjson",
+			"repository": "https://github.com/pquerna/ffjson",
+			"revision": "5b79949af5378123d6b0672afc88d3b214bb4f9f",
+			"branch": "master"
+		},
+		{
+			"importpath": "github.com/pquerna/ffjson/ffjson",
+			"repository": "https://github.com/pquerna/ffjson",
+			"revision": "5b79949af5378123d6b0672afc88d3b214bb4f9f",
+			"branch": "master",
+			"path": "/ffjson"
+		},
+		{
+			"importpath": "github.com/pquerna/ffjson/fflib/v1",
+			"repository": "https://github.com/pquerna/ffjson",
+			"revision": "5b79949af5378123d6b0672afc88d3b214bb4f9f",
+			"branch": "master",
+			"path": "/fflib/v1"
+		},
+		{
+			"importpath": "github.com/pquerna/ffjson/inception",
+			"repository": "https://github.com/pquerna/ffjson",
+			"revision": "5b79949af5378123d6b0672afc88d3b214bb4f9f",
+			"branch": "master",
+			"path": "/inception"
+		},
+		{
+			"importpath": "github.com/pquerna/ffjson/shared",
+			"repository": "https://github.com/pquerna/ffjson",
+			"revision": "5b79949af5378123d6b0672afc88d3b214bb4f9f",
+			"branch": "master",
+			"path": "/shared"
+		},
+		{
 			"importpath": "github.com/smartystreets/assertions",
 			"repository": "https://github.com/smartystreets/assertions",
 			"revision": "2063fd1cc7c975db70502811a34b06ad034ccdf2",
@@ -37,6 +102,13 @@
 			"revision": "4622128e06c77c0174e17a7f0ed2db19a989b473",
 			"branch": "master",
 			"path": "/convey"
+		},
+		{
+			"importpath": "golang.org/x/net/context",
+			"repository": "https://go.googlesource.com/net",
+			"revision": "6a513affb38dc9788b449d59ffed099b8de18fa0",
+			"branch": "master",
+			"path": "/context"
 		},
 		{
 			"importpath": "golang.org/x/sys/unix",
@@ -56,6 +128,18 @@
 			"repository": "https://gopkg.in/gemnasium/logrus-airbrake-hook.v2",
 			"revision": "31e6fd4bd5a98d8ee7673d24bc54ec73c31810dd",
 			"branch": "master"
+		},
+		{
+			"importpath": "gopkg.in/go-playground/validator.v8",
+			"repository": "https://gopkg.in/go-playground/validator.v8",
+			"revision": "5f57d2222ad794d0dffb07e664ea05e2ee07d60c",
+			"branch": "master"
+		},
+		{
+			"importpath": "gopkg.in/yaml.v2",
+			"repository": "https://gopkg.in/yaml.v2",
+			"revision": "e4d366fc3c7938e2958e662b4258c7a89e1f0e3e",
+			"branch": "v2"
 		}
 	]
 }
