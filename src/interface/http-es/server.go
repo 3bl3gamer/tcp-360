@@ -10,14 +10,24 @@ import (
 	"github.com/pquerna/ffjson/ffjson"
 )
 
-func sendMessage(w gin.ResponseWriter, x interface{}) {
-	w.WriteString("data: ")
-	err := ffjson.NewEncoder(w).Encode(x)
+func sendMessage(w gin.ResponseWriter, x interface{}) (err error) {
+	_, err = w.WriteString("data: ")
 	if err != nil {
-		log.WithField("err", err).Error("HTTP-ES error")
+		return
 	}
-	w.WriteString("\n")
+
+	err = ffjson.NewEncoder(w).Encode(x)
+	if err != nil {
+		return
+	}
+
+	_, err = w.WriteString("\n")
+	if err != nil {
+		return
+	}
+
 	w.Flush()
+	return
 }
 
 func Run(cc *core.Core) {
@@ -27,45 +37,25 @@ func Run(cc *core.Core) {
 		c.Header("Content-Type", "text/event-stream; charset=utf-8")
 		c.Header("Cache-Control", "no-cache")
 
-		originChannel := cc.OriginChannel()
-		packetChannel := cc.PacketChannel()
-		cc.RecastOrigin()
+		ch := cc.Subscribe()
 
 		for {
-			select {
-			case origin := <-originChannel:
-				sendMessage(c.Writer, messageInitFromCore(origin))
-			case packet := <-packetChannel:
-				sendMessage(c.Writer, messagePacketFromCore(packet))
+			tmp := <-ch
+			switch tmp.(type) {
+			case core.Origin:
+				err := sendMessage(c.Writer, messageInitFromCore(tmp.(core.Origin)))
+				if err != nil {
+					break
+				}
+			case core.Packet:
+				err := sendMessage(c.Writer, messagePacketFromCore(tmp.(core.Packet)))
+				if err != nil {
+					break
+				}
+			default:
+				log.Warn("Got unknown type from core")
 			}
 		}
-
-		// im := MessageInit{
-		// 	Event:     "init",
-		// 	IP:        "77.108.234.195",
-		// 	Caption:   "Penza, RU",
-		// 	Latitude:  "53.234971",
-		// 	Longitude: "44.995392",
-		// }
-
-		// pkt := MessagePacket{
-		// 	Event: "packet",
-
-		// 	Latitude:  "63.234971",
-		// 	Longitude: "54.995392",
-		// 	Caption:   "Moldova, US",
-
-		// 	IP:       "8.8.8.8",
-		// 	Port:     0,
-		// 	Protocol: "ICMP",
-		// 	Size:     64,
-		// }
-
-		// sendMessage(c.Writer, im)
-		// for {
-		// 	sendMessage(c.Writer, pkt)
-		// 	<-time.After(5 * time.Second)
-		// }
 	})
 
 	router.GET("/", func(c *gin.Context) {

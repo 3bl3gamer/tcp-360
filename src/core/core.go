@@ -9,48 +9,31 @@ import (
 )
 
 type Core struct {
-	originChannel chan Origin
-	packetChannel chan Packet
 	currentOrigin *Origin
-}
-
-type Origin struct {
-	IP        string
-	Latitude  string
-	Longitude string
-	Caption   string
-}
-
-type Packet struct {
-	Latitude  string
-	Longitude string
-	Caption   string
-
-	IP       string
-	Port     uint64
-	Protocol string
-	Size     uint64
+	subs          map[chan interface{}]interface{}
 }
 
 func New() (ret *Core) {
 	ret = &Core{}
-	ret.originChannel = make(chan Origin, 2)
-	ret.packetChannel = make(chan Packet, 10)
+	ret.subs = make(map[chan interface{}]interface{})
 	return
 }
 
-func (c *Core) RecastOrigin() {
-	if c.currentOrigin != nil {
-		c.originChannel <- *c.currentOrigin
+func (c *Core) broadcast(x interface{}) {
+	for ch, _ := range c.subs {
+		ch <- x
 	}
 }
 
-func (c *Core) OriginChannel() chan Origin {
-	return c.originChannel
-}
-
-func (c *Core) PacketChannel() chan Packet {
-	return c.packetChannel
+func (c *Core) Subscribe() (ret chan interface{}) {
+	// make new channel
+	ret = make(chan interface{}, 10)
+	c.subs[ret] = nil
+	// recast origin so they can know it
+	if c.currentOrigin != nil {
+		c.broadcast(*c.currentOrigin)
+	}
+	return
 }
 
 func (c *Core) Run() {
@@ -71,7 +54,7 @@ func (c *Core) Run() {
 		Longitude: lr.Longitude,
 	}
 	log.WithField("origin", c.currentOrigin).Info("New origin")
-	c.originChannel <- *c.currentOrigin
+	c.broadcast(*c.currentOrigin)
 
 	w := nethack.NewWorker()
 	ch := w.Channel
@@ -98,6 +81,6 @@ func (c *Core) Run() {
 			Size:     pkt.Size,
 		}
 		log.WithField("pp", pp).Info("Packet")
-		c.packetChannel <- pp
+		c.broadcast(pp)
 	}
 }
