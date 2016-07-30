@@ -84,8 +84,8 @@ function sendRandomPacket() {
 	handleEvent({
 		event: "packet",
 		ip: "4.3.2.1",
-		latitude: places[p][1],
-		longtitude: places[p][0],
+		latitude: places[p][1]+Math.random()*10,
+		longtitude: places[p][0]+Math.random()*10,
 		caption: p,
 		port: Math.random()*65536|0,
 		type: ["TCP", "UDP", "ICMP"][Math.random()*3|0],
@@ -93,4 +93,4 @@ function sendRandomPacket() {
 	})
 }
 sendInit()
-for (var i=10;i--;) sendRandomPacket()
+setInterval(sendRandomPacket, 500)

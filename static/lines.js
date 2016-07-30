@@ -11,17 +11,21 @@ function LinesHost(gl) {
 LinesHost.shader = {}
 LinesHost.shader.fs = "\
 	precision mediump float;\
+	varying float vBrightness;\
+	uniform vec3 uColor;\
 	\
 	void main(void) {\
-		gl_FragColor = vec4(vec3(1,1,1)*0.3,1);\
+		gl_FragColor = vec4(uColor*0.5*vBrightness, 1);\
 	}"
 LinesHost.shader.vs = "\
 	precision mediump float;\
 	attribute vec3 aVertexPosition;\
+	varying float vBrightness;\
 	uniform mat4 uMVMatrix;\
 	uniform mat4 uPMatrix;\
 	uniform vec2 uRot0;\
 	uniform vec2 uRot1;\
+	uniform float uFill;\
 	const float PI = 3.1415926535897932384626433832795;\
 	\
 	void main(void) {\
@@ -32,6 +36,7 @@ LinesHost.shader.vs = "\
 		float dis = distance(-t, f)*0.5;\
 		vec3 mid = normalize(f+t);\
 		gl_Position = uPMatrix * uMVMatrix * vec4(mix(f, t, cos(k*PI)*0.5+0.5) + mid*sin(k*PI)*(1.05-dis), 1.0);\
+		vBrightness = clamp((k+uFill-0.9)*10.0, 0.0, 1.0);\
 	}"
 LinesHost.shader.init = function(gl, prog) {
 	gl.useProgram(prog)
@@ -43,12 +48,8 @@ LinesHost.shader.init = function(gl, prog) {
 	prog.mvMatrixUniform = gl.getUniformLocation(prog, "uMVMatrix")
 	prog.rot0Uniform = gl.getUniformLocation(prog, "uRot0")
 	prog.rot1Uniform = gl.getUniformLocation(prog, "uRot1")
-}
-
-LinesHost.prototype.getPos = function(dest, phi, theta) {
-	dest[0] = Math.sin(phi) * Math.cos(theta)
-	dest[1] = Math.cos(phi) * Math.cos(theta)
-	dest[2] = Math.sin(theta)
+	prog.colorUniform = gl.getUniformLocation(prog, "uColor")
+	prog.fillUniform = gl.getUniformLocation(prog, "uFill")
 }
 
 LinesHost.prototype._initBuffers = function(gl) {
@@ -80,11 +81,18 @@ LinesHost.prototype.draw = function(gfx) {
 	gl.uniformMatrix4fv(this.shaderProgram.pMatrixUniform, false, gfx.camera.pMatrix)
 	gl.uniformMatrix4fv(this.shaderProgram.mvMatrixUniform, false, this.mvMatrix)
 
+	while (this.lines.length>0 && this.lines[0].hasExpired())
+		this.lines.shift()
+
 	var k = Math.PI/180
 	for (var i=0; i<this.lines.length; i++) {
 		var line = this.lines[i]
+		var fill = (Date.now()-line.createdAt)/500
+		var ck = Math.min(1, (3000-Date.now()+line.createdAt)/500)
 		gl.uniform2f(this.shaderProgram.rot0Uniform, line.start.longtitude*k, line.start.latitude*k)
 		gl.uniform2f(this.shaderProgram.rot1Uniform, line.end.longtitude*k, line.end.latitude*k)
+		gl.uniform3f(this.shaderProgram.colorUniform, 0.5*ck, 1*ck, 0.5*ck)
+		gl.uniform1f(this.shaderProgram.fillUniform, fill)
 		gl.drawArrays(gl.LINE_STRIP, 0, this.vertexPosBuffer.numItems)
 	}
 
@@ -101,9 +109,9 @@ function Line(start, end, params) {
 	this.start = start
 	this.end = end
 	this.params = params
-	this.created_at = Date.now()
+	this.createdAt = Date.now()
 }
 
 Line.prototype.hasExpired = function() {
-	return Date.now() - this.created_at > 3000
+	return Date.now() - this.createdAt > 3000
 }
