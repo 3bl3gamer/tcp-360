@@ -2,6 +2,8 @@ var gfx = new GFX(canvas)
 var sphere = new TCPSphere(gfx.gl)
 var lines = new LinesHost(gfx.gl)
 
+gfx.camera.addRot(localStorage.camXRot||0, localStorage.camYRot||0)
+
 gfx.start(function(gl){
 	sphere.draw(gfx)
 	lines.draw(gfx)
@@ -23,6 +25,8 @@ function singleDown(x, y, is_switching) {
 function singleMove(x, y) {
 	if (!isGrabbed) return false
 	gfx.camera.addRot((x-prevX)/100, (y-prevY)/100)
+	localStorage.camXRot = gfx.camera.xRot
+	localStorage.camYRot = gfx.camera.yRot
 	prevX = x
 	prevY = y
 	return true
