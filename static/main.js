@@ -46,12 +46,19 @@ control.double({
 
 
 
+function fixLonLat(data) {
+	data.longitude = parseFloat(data.longitude)
+	data.latitude = parseFloat(data.latitude)
+}
 var me = null
 var handlers = {
 	init: function(data) {
+		fixLonLat(data)
 		me = data
 	},
 	packet: function(data) {
+		if (me == null) return
+		fixLonLat(data)
 		lines.addLine(me, data, data)
 	}
 }
