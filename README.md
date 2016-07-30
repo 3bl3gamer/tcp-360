@@ -2,6 +2,8 @@
 
 Intercepts IP packets and shows their path on the globe.
 
+![Screenshot](screenshot.png)
+
 
 ## Requirements
 
