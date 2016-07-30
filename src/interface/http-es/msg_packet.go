@@ -3,11 +3,15 @@ package httpES
 //go:generate ffjson $GOFILE
 
 // ffjson: nodecoder
-type MessageInit struct {
+type MessagePacket struct {
 	Event string `json:"event"`
 
-	IP        string `json:"ip"`
 	Latitude  string `json:"latitude"`
 	Longitude string `json:"longitude"`
 	Caption   string `json:"caption"`
+
+	IP       string `json:"ip"`
+	Port     uint64 `json:"port"`
+	Protocol string `json:"protocol"`
+	Size     uint64 `json:"size"`
 }
