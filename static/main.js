@@ -106,9 +106,9 @@ function sendRandomPacket() {
 		longitude: places[p][0]+Math.random()*10,
 		caption: p,
 		port: Math.random()*65536|0,
-		type: ["TCP", "UDP", "ICMP"][Math.random()*3|0],
+		protocol: ["TCP", "UDP", "ICMP"][Math.random()*3|0],
 		size: Math.random()*4096|0
 	})
 }
 //sendInit()
-setInterval(sendRandomPacket, 500)
+//setInterval(sendRandomPacket, 500)

@@ -114,7 +114,7 @@ function Line(start, end, params) {
 	this.start = start
 	this.end = end
 	this.params = params
-	this.color = new Float32Array(Line.colors[params.type] || Line.colors.default)
+	this.color = new Float32Array(Line.colors[params.protocol] || Line.colors.default)
 	this.createdAt = Date.now()
 }
 
