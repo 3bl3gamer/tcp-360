@@ -15,7 +15,7 @@ LinesHost.shader.fs = "\
 	uniform vec3 uColor;\
 	\
 	void main(void) {\
-		gl_FragColor = vec4(uColor*0.5*vBrightness, 1);\
+		gl_FragColor = vec4(uColor*vBrightness, 1);\
 	}"
 LinesHost.shader.vs = "\
 	precision mediump float;\
@@ -74,7 +74,7 @@ LinesHost.prototype.draw = function(gfx) {
 	gl.useProgram(this.shaderProgram)
 	this._bindBuffers(gl)
 
-	gl.lineWidth(2)
+	gl.lineWidth(2*gfx.scale)
 	gl.blendFunc(gl.ONE, gl.ONE)
 	gl.depthMask(false)
 
@@ -84,15 +84,20 @@ LinesHost.prototype.draw = function(gfx) {
 	while (this.lines.length>0 && this.lines[0].hasExpired())
 		this.lines.shift()
 
-	var k = Math.PI/180
+	var deg2rad = Math.PI/180
+	var now = Date.now()
 	for (var i=0; i<this.lines.length; i++) {
 		var line = this.lines[i]
-		var fill = (Date.now()-line.createdAt)/500
-		var ck = Math.min(1, (3000-Date.now()+line.createdAt)/500)
-		gl.uniform2f(this.shaderProgram.rot0Uniform, line.start.longtitude*k, line.start.latitude*k)
-		gl.uniform2f(this.shaderProgram.rot1Uniform, line.end.longtitude*k, line.end.latitude*k)
-		gl.uniform3f(this.shaderProgram.colorUniform, 0.5*ck, 1*ck, 0.5*ck)
-		gl.uniform1f(this.shaderProgram.fillUniform, fill)
+
+		var timedelta = now - line.createdAt
+		var kFill = timedelta/500
+		var kFadeout = Math.min(1, (Line.lifeTime - timedelta)/1000)
+		var color = line.color
+
+		gl.uniform2f(this.shaderProgram.rot0Uniform, line.start.longitude*deg2rad, line.start.latitude*deg2rad)
+		gl.uniform2f(this.shaderProgram.rot1Uniform, line.end.longitude*deg2rad,   line.end.latitude*deg2rad)
+		gl.uniform3f(this.shaderProgram.colorUniform, color[0]*kFadeout, color[1]*kFadeout, color[2]*kFadeout)
+		gl.uniform1f(this.shaderProgram.fillUniform, kFill)
 		gl.drawArrays(gl.LINE_STRIP, 0, this.vertexPosBuffer.numItems)
 	}
 
@@ -109,9 +114,18 @@ function Line(start, end, params) {
 	this.start = start
 	this.end = end
 	this.params = params
+	this.color = new Float32Array(Line.colors[params.type] || Line.colors.default)
 	this.createdAt = Date.now()
 }
 
+Line.lifeTime = 3000
+Line.colors = {
+	TCP: [0.5, 0.5, 1],
+	UDP: [0.5, 1, 0.5],
+	ICMP: [1, 0.5, 1],
+	default: [0.8, 0.8, 0.8]
+}
+
 Line.prototype.hasExpired = function() {
-	return Date.now() - this.createdAt > 3000
+	return Date.now() - this.createdAt > Line.lifeTime
 }

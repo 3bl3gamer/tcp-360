@@ -65,7 +65,7 @@ function sendInit() {
 		event: "init",
 		ip: "1.2.3.4",
 		latitude: 34.165768,
-		longtitude: -118.282969,
+		longitude: -118.282969,
 		caption: "Newbee Street, California, US"
 	})
 }
@@ -85,7 +85,7 @@ function sendRandomPacket() {
 		event: "packet",
 		ip: "4.3.2.1",
 		latitude: places[p][1]+Math.random()*10,
-		longtitude: places[p][0]+Math.random()*10,
+		longitude: places[p][0]+Math.random()*10,
 		caption: p,
 		port: Math.random()*65536|0,
 		type: ["TCP", "UDP", "ICMP"][Math.random()*3|0],

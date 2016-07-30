@@ -1,5 +1,6 @@
 function GFX(canvas) {
 	this.canvas = canvas
+	this.scale = 1
 	this.camera = new GFX.Camera()
 
 	this.gl = this.canvas.getContext('webgl') ||
@@ -17,9 +18,9 @@ function GFX(canvas) {
 
 GFX.prototype.resize = function() {
 	var rect = this.canvas.getBoundingClientRect()
-	var scale = devicePixelRatio
-	this.canvas.width = rect.width * scale
-	this.canvas.height = rect.height * scale
+	this.scale = devicePixelRatio
+	this.canvas.width = rect.width * this.scale
+	this.canvas.height = rect.height * this.scale
 	this.camera.setAspectRatio(this.canvas.width / this.canvas.height)
 	this.gl.viewport(0, 0, this.canvas.width, this.canvas.height)
 }
