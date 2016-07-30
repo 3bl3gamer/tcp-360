@@ -24,6 +24,9 @@ func Run() {
 	router := gin.Default()
 
 	router.GET("/event-source", func(c *gin.Context) {
+		c.Header("Content-Type", "text/event-stream; charset=utf-8")
+		c.Header("Cache-Control", "no-cache")
+
 		im := MessageInit{
 			Event:     "init",
 			IP:        "77.108.234.195",
