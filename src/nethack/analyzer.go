@@ -50,6 +50,7 @@ func AnalyzeAlpha(str string) (ret Packet, err error) {
 		if err != nil {
 			return ret, err
 		}
+		return
 	}
 
 	// ICMP
@@ -62,6 +63,7 @@ func AnalyzeAlpha(str string) (ret Packet, err error) {
 		if err != nil {
 			return ret, err
 		}
+		return
 	}
 
 	// TCP
@@ -78,6 +80,7 @@ func AnalyzeAlpha(str string) (ret Packet, err error) {
 		if err != nil {
 			return ret, err
 		}
+		return
 	}
 
 	return

@@ -28,7 +28,7 @@ Must be sent only once.
 	longtitude: ...
 	caption: "Bamboo Street, Kyoto, JP"
 	port: 1523  // 0 if not applicable
-	type: "TCP"  // TCP, UDP, ICMP
+	protocol: "TCP"  // TCP, UDP, ICMP
 	size: 3672  // bytes
 }
 ```

@@ -18,6 +18,10 @@ func NewWorker() (ret *Worker) {
 }
 
 func (w *Worker) Run() {
+	defer func() {
+		close(w.Channel)
+	}()
+
 	cmd := exec.Command("tcpdump", "-q", "-n", "-t", "-l", "ip")
 	r, err := cmd.StdoutPipe()
 	if err != nil {
