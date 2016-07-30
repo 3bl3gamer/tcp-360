@@ -1,18 +1,27 @@
 package main
 
 import (
-	"fmt"
+	"geoip"
 	"nethack"
+
+	log "github.com/Sirupsen/logrus"
 )
 
 func main() {
-	fmt.Printf("Hello %v!\n", "world")
+	log.SetLevel(log.DebugLevel)
+	log.Info("Starting up...")
 
 	w := nethack.NewWorker()
 	ch := w.Channel
 	go w.Run()
 	for {
 		tmp := <-ch
-		fmt.Printf("PKT: %v\n", tmp)
+		log.WithField("packet", tmp).Info("Got packet")
+
+		geo, err := geoip.Lookup(tmp.DestIP)
+		if err != nil {
+			log.WithField("err", err).Error("Geo lookup error")
+		}
+		log.WithField("geo", geo).Info("Got geo info")
 	}
 }
