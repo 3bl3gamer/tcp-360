@@ -55,6 +55,11 @@ func Run() {
 		}
 	})
 
+	router.GET("/", func(c *gin.Context) {
+		c.Redirect(301, "/static/")
+	})
+	router.Static("/static", "static/")
+
 	// By default it serves on :8080 unless a
 	// PORT environment variable was defined.
 	router.Run(":8740")
