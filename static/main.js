@@ -2,7 +2,7 @@ var gfx = new GFX(canvas)
 var sphere = new TCPSphere(gfx.gl)
 var lines = new LinesHost(gfx.gl)
 
-gfx.camera.addRot(localStorage.camXRot||0, localStorage.camYRot||0)
+gfx.camera.addRot(+localStorage.camXRot||0, +localStorage.camYRot||0)
 
 gfx.start(function(gl){
 	sphere.draw(gfx)
@@ -63,6 +63,13 @@ function handleEvent(data) {
 
 
 
+var eventSource = new EventSource("http://localhost:8740/event-source")
+eventSource.onmessage = function(e) {
+	handleEvent(JSON.parse(e.data))
+}
+
+
+
 // mocking
 function sendInit() {
 	handleEvent({
@@ -96,5 +103,5 @@ function sendRandomPacket() {
 		size: Math.random()*4096|0
 	})
 }
-sendInit()
+//sendInit()
 setInterval(sendRandomPacket, 500)
