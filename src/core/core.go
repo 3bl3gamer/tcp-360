@@ -36,6 +36,10 @@ func (c *Core) Subscribe() (ret chan interface{}) {
 	return
 }
 
+func (c *Core) Unsubscribe(ch chan interface{}) {
+	delete(c.subs, ch)
+}
+
 func (c *Core) Run() {
 	ip, err := extip.GetExternalIP()
 	if err != nil {

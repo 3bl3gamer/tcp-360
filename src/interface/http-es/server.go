@@ -38,6 +38,9 @@ func Run(cc *core.Core) {
 		c.Header("Cache-Control", "no-cache")
 
 		ch := cc.Subscribe()
+		defer func() {
+			cc.Unsubscribe(ch)
+		}()
 
 		for {
 			tmp := <-ch
