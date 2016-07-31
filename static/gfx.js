@@ -3,17 +3,20 @@ function GFX(canvas) {
 	this.scale = 1
 	this.camera = new GFX.Camera()
 
-	this.gl = this.canvas.getContext('webgl') ||
-		this.canvas.getContext("experimental-webgl")
+	var params = {antialias:true, alpha:false}
+	this.gl = this.canvas.getContext("webgl", params) ||
+		this.canvas.getContext("experimental-webgl", params)
 
 	this.resize()
 
 	var gl = this.gl
-	gl.clearColor(0.1, 0.1, 0.1, 1)
+	gl.clearColor(0, 0, 0, 1)
 	gl.enable(gl.BLEND)
 	gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
 	gl.enable(gl.DEPTH_TEST)
 	gl.depthFunc(gl.LESS)
+	gl.enable(gl.CULL_FACE)
+	//gl.cullFace(gl.BACK)
 }
 
 GFX.prototype.resize = function() {
@@ -69,26 +72,28 @@ GFX.buildShaderProgram = function(gl, params /*{fs, vs, init(gl,prog)}*/) {
 
 GFX.Camera = function() {
 	this.pMatrix = mat4.create()
-	this.fov = 30
+	this.mvMatrix = mat4.create()
+	this.fov = 25
 	this.aspectRatio = 1
 	this.xRot = 0
 	this.yRot = 0
 }
 
-GFX.Camera.prototype._updateMatrix = function() {
+GFX.Camera.prototype._updateMatrices = function() {
 	mat4.perspective(this.fov, this.aspectRatio, 0.1, 10.0, this.pMatrix)
-	mat4.translate(this.pMatrix, [0, 0, -5])
-	mat4.rotateX(this.pMatrix, this.yRot + Math.PI/2)
-	mat4.rotateZ(this.pMatrix, -this.xRot)
+	mat4.identity(this.mvMatrix)
+	mat4.translate(this.mvMatrix, [0, 0, -5])
+	mat4.rotateX(this.mvMatrix, this.yRot + Math.PI/2)
+	mat4.rotateZ(this.mvMatrix, -this.xRot)
 }
 
 GFX.Camera.prototype.setAspectRatio = function(aspectRatio) {
 	this.aspectRatio = aspectRatio
-	this._updateMatrix()
+	this._updateMatrices()
 }
 
 GFX.Camera.prototype.addRot = function(dx, dy) {
 	this.xRot += dx
 	this.yRot = Math.max(-Math.PI/2.1, Math.min(this.yRot+dy, Math.PI/2.1))
-	this._updateMatrix()
+	this._updateMatrices()
 }

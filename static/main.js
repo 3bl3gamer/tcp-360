@@ -70,7 +70,7 @@ function handleEvent(data) {
 
 
 
-var eventSource = new EventSource("http://localhost:8740/event-source")
+var eventSource = new EventSource("/event-source")
 eventSource.onmessage = function(e) {
 	handleEvent(JSON.parse(e.data))
 }

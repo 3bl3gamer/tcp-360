@@ -1,5 +1,4 @@
 function LinesHost(gl) {
-	this.mvMatrix = mat4.identity(mat4.create())
 	this.lines = []
 
 	this.vertexPosBuffer = null
@@ -79,7 +78,7 @@ LinesHost.prototype.draw = function(gfx) {
 	gl.depthMask(false)
 
 	gl.uniformMatrix4fv(this.shaderProgram.pMatrixUniform, false, gfx.camera.pMatrix)
-	gl.uniformMatrix4fv(this.shaderProgram.mvMatrixUniform, false, this.mvMatrix)
+	gl.uniformMatrix4fv(this.shaderProgram.mvMatrixUniform, false, gfx.camera.mvMatrix)
 
 	while (this.lines.length>0 && this.lines[0].hasExpired())
 		this.lines.shift()

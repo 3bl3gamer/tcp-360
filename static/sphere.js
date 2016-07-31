@@ -1,6 +1,4 @@
 function TCPSphere(gl) {
-	this.mvMatrix = mat4.identity(mat4.create())
-
 	this.vertexPosBuffer = null
 	this.texCoordBuffer = null
 	this.indexBuffer = null
@@ -9,36 +7,54 @@ function TCPSphere(gl) {
 	this._initBuffers(gl)
 	this._bindBuffers(gl)
 
-	var img = new Image()
-	img.src = "tex.jpg"
-	img.onload = function() {
-		this._imgToTex(gl, img)
-	}.bind(this)
+	;["day", "night"].forEach(function(name, i){
+		var img = new Image()
+		img.src = "tex_"+name+".jpg"
+		img.onload = function() {
+			gl.activeTexture(gl['TEXTURE'+i])
+			this._imgToTex(gl, img)
+		}.bind(this)
+	}.bind(this))
 }
 
 TCPSphere.shader = {}
 TCPSphere.shader.fs = "\
 	precision mediump float;\
 	varying vec2 vTextureCoord;\
-	uniform sampler2D uSampler;\
+	varying vec3 vNormal;\
+	uniform sampler2D uSamplerDay;\
+	uniform sampler2D uSamplerNight;\
+	uniform float uPhase;\
+	uniform vec3 uSunPos;\
+	uniform vec3 uCameraPos;\
 	\
 	void main(void) {\
-		float d = clamp(gl_FragCoord.z/gl_FragCoord.w-4.2, -0.1, 1.0);\
-		gl_FragColor = mix(texture2D(uSampler, vec2(vTextureCoord.s, vTextureCoord.t)), vec4(1,1,1,1), d) - vec4(0.1,0.1,0.1,0);\
+		vec3 dayCol = texture2D(uSamplerDay, vTextureCoord.st).xyz - vec3(0.1);\
+		vec3 nightCol = texture2D(uSamplerNight, vTextureCoord.st).xyz * 1.2;\
+		vec3 glowCol = vec3(0.6,0.8,1);\
+		\
+		float glowK = clamp(1.2-dot(normalize(vNormal), uCameraPos)*1.1 - uPhase*5.0, 0.0, 1.0);\
+		float dayNightK = clamp(dot(vNormal, uSunPos)*10.0, 0.0, 1.0);\
+		vec3 surfaceCol = mix(dayCol, nightCol, dayNightK);\
+		\
+		vec3 col = mix(surfaceCol, glowCol, glowK*glowK*(1.0-dayNightK));\
+		gl_FragColor = vec4(col, 1.0);\
 	}"
 TCPSphere.shader.vs = "\
 	precision mediump float;\
 	attribute vec3 aVertexPosition;\
 	attribute vec2 aTextureCoord;\
+	varying vec2 vTextureCoord;\
+	varying vec3 vNormal;\
 	uniform mat4 uMVMatrix;\
 	uniform mat4 uPMatrix;\
 	uniform float uPhase;\
-	varying vec2 vTextureCoord;\
 	\
 	void main(void) {\
 		float phi = aVertexPosition.x, theta = aVertexPosition.z;\
 		vec3 spherePosition = vec3(sin(phi)*cos(theta), cos(phi)*cos(theta), sin(theta));\
 		gl_Position = uPMatrix * uMVMatrix * vec4(mix(spherePosition, aVertexPosition, uPhase), 1.0);\
+		vNormal = spherePosition;\
 		vTextureCoord = aTextureCoord;\
 	}"
 TCPSphere.shader.init = function(gl, prog) {
@@ -52,8 +68,14 @@ TCPSphere.shader.init = function(gl, prog) {
 
 	prog.pMatrixUniform = gl.getUniformLocation(prog, "uPMatrix")
 	prog.mvMatrixUniform = gl.getUniformLocation(prog, "uMVMatrix")
-	prog.samplerUniform = gl.getUniformLocation(prog, "uSampler")
+	prog.daySamplerUniform = gl.getUniformLocation(prog, "uSamplerDay")
+	prog.nightSamplerUniform = gl.getUniformLocation(prog, "uSamplerNight")
 	prog.phaseUniform = gl.getUniformLocation(prog, "uPhase")
+	prog.sunPosUniform = gl.getUniformLocation(prog, "uSunPos")
+	prog.cameraPosUniform = gl.getUniformLocation(prog, "uCameraPos")
+
+	gl.uniform1i(prog.daySamplerUniform, 0)
+	gl.uniform1i(prog.nightSamplerUniform, 1)
 }
 
 TCPSphere.prototype.draw = function(gfx) {
@@ -61,9 +83,18 @@ TCPSphere.prototype.draw = function(gfx) {
 	gl.useProgram(this.shaderProgram)
 	this._bindBuffers(gl)
 
+	var axialTilt = 23.43 * Math.PI/180
+	var xRot = Date.now()/5000
+	var sunX=Math.cos(xRot)*Math.cos(axialTilt), sunY=Math.sin(xRot)*Math.cos(axialTilt), sunZ=Math.sin(axialTilt)
+
+	var a=gfx.camera.xRot, b=gfx.camera.yRot
+	var camX=-Math.sin(a)*Math.cos(b), camY=Math.cos(a)*Math.cos(b), camZ=-Math.sin(b)
+
 	gl.uniformMatrix4fv(this.shaderProgram.pMatrixUniform, false, gfx.camera.pMatrix)
-	gl.uniformMatrix4fv(this.shaderProgram.mvMatrixUniform, false, this.mvMatrix)
+	gl.uniformMatrix4fv(this.shaderProgram.mvMatrixUniform, false, gfx.camera.mvMatrix)
 	gl.uniform1f(this.shaderProgram.phaseUniform, (Math.sin(Date.now()/1000)/2+0.5)*0)
+	gl.uniform3f(this.shaderProgram.sunPosUniform, sunX, sunY, sunZ)
+	gl.uniform3f(this.shaderProgram.cameraPosUniform, camX, camY, camZ)
 
 	gl.drawElements(gl.TRIANGLES, this.indexBuffer.numItems, gl.UNSIGNED_SHORT, 0)
 }
@@ -106,8 +137,8 @@ TCPSphere.prototype._initBuffers = function(gl) {
 			var o = (i + j*hsteps)*2
 			var h = hsteps+1
 			var i1=i+1, j1=j+1
-			tri(o,   i +j *h, i1+j*h, i +j1*h)
-			tri(o+1, i +j1*h, i1+j*h, i1+j1*h)
+			tri(o,   i +j *h, i +j1*h, i1+j*h)
+			tri(o+1, i +j1*h, i1+j1*h, i1+j*h)
 		}
 	}
 
